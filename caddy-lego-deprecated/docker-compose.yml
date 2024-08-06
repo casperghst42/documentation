@@ -1,0 +1,41 @@
+services:
+  caddy:
+    container_name: caddy
+    hostname: caddy
+    image: acme/caddy-lego:latest
+    build:
+      context: ./build/caddy
+      dockerfile: Dockerfile
+      tags:
+        - acme/caddy-lego:latest
+    environment:
+      - TZ=Europe/Copenhagen
+      - SIMPLY_ACCOUNT_NAME=<your account key>
+      - SIMPLY_API_KEY=<your api key>
+    networks:
+      public:
+        ipv4_address: 10.20.0.10
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ./data/caddy/data:/data
+      - ./data/caddy/config:/config
+    healthcheck:
+      test: [ "CMD-SHELL", "nc -z localhost 443 || exit -1" ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+		
+networks:
+  public:
+    name: public
+    driver: macvlan
+    driver_opts:
+      parent: eth0
+    ipam:
+      config:
+        - subnet: "10.20.0.0/24"
+          ip_range: "10.20.0.64/26"
+          gateway: "10.20.0.1"
