@@ -60,7 +60,7 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
-		
+
 networks:
   public:
     name: public
